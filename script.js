@@ -301,6 +301,8 @@ function buildPhotoSphere() {
       transparent: true,
       opacity: 1,
       color: 0xffffff,
+      side: THREE.DoubleSide,   // hiện cả mặt sau khi xoay cầu
+      depthWrite: false,        // tránh z-fighting giữa các ảnh
     });
 
     const img = new Image();
@@ -315,22 +317,22 @@ function buildPhotoSphere() {
       // 1. Vẽ ảnh gốc
       cx.drawImage(img, 0, 0, W, H);
 
-      // 2. Overlay tông màu vũ trụ — hồng tím rất nhẹ (blend multiply)
+      // 2. Overlay tông màu vũ trụ — rất nhẹ
       cx.globalCompositeOperation = 'multiply';
-      cx.fillStyle = 'rgba(200, 160, 210, 0.18)';
+      cx.fillStyle = 'rgba(210, 175, 220, 0.10)';
       cx.fillRect(0, 0, W, H);
 
-      // 3. Tăng contrast nhẹ bằng overlay
-      cx.globalCompositeOperation = 'overlay';
-      cx.fillStyle = 'rgba(180, 100, 140, 0.08)';
+      // 3. Tăng sáng nhẹ
+      cx.globalCompositeOperation = 'screen';
+      cx.fillStyle = 'rgba(255, 220, 240, 0.06)';
       cx.fillRect(0, 0, W, H);
 
-      // 4. Vignette bo góc — làm ảnh hòa vào nền tối
+      // 4. Vignette bo góc — nhẹ hơn để ảnh không bị tối
       cx.globalCompositeOperation = 'source-over';
-      const vg = cx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.28, W/2, H/2, Math.max(W,H)*0.72);
+      const vg = cx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.35, W/2, H/2, Math.max(W,H)*0.75);
       vg.addColorStop(0, 'rgba(0,0,0,0)');
-      vg.addColorStop(0.7, 'rgba(0,0,0,0)');
-      vg.addColorStop(1, 'rgba(8,3,14,0.72)');
+      vg.addColorStop(0.75, 'rgba(0,0,0,0)');
+      vg.addColorStop(1, 'rgba(8,3,14,0.45)');  // nhẹ hơn 0.72 cũ
       cx.fillStyle = vg;
       cx.fillRect(0, 0, W, H);
 
