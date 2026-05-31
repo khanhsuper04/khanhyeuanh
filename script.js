@@ -1101,8 +1101,9 @@ document.getElementById('introBtn').addEventListener('click', () => {
     endingMusic.currentTime = 0;
   }).catch(()=>{});
 
-  // 1. Intro fade out
+  // 1. Intro fade out rồi ẩn hẳn
   introScreen.classList.remove('active');
+  setTimeout(() => { introScreen.style.display = 'none'; }, 900);
 
   // 2. Nền sao fade in
   let starT = 0;
