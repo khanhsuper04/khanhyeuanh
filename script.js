@@ -89,15 +89,15 @@ let endingParts2d   = [];
    THREE.JS SETUP
 ═══════════════════════════════════════════════════════════ */
 const renderer = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3)); // tăng lên 3 cho mobile retina
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x000000, 0);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
+renderer.toneMappingExposure = 1.4; // sáng hơn
 
 const scene  = new THREE.Scene();
 // Sương mù nhẹ — tạo chiều sâu không gian
-scene.fog = new THREE.FogExp2(0x08030e, 0.018);
+scene.fog = new THREE.FogExp2(0x08030e, 0.008); // giảm fog để ảnh rõ hơn
 
 const camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.z = currentCamZ;
@@ -106,7 +106,7 @@ raycaster = new THREE.Raycaster();
 mouse2d   = new THREE.Vector2(-9999, -9999);
 
 /* ── Ánh sáng ── */
-scene.add(new THREE.AmbientLight(0xffeef5, 0.55));
+scene.add(new THREE.AmbientLight(0xffeef5, 0.9)); // tăng ambient sáng hơn
 
 const pLight1 = new THREE.PointLight(0xf0a0b8, 1.4, 22);
 pLight1.position.set(4, 3, 5);
@@ -121,7 +121,7 @@ pLight3.position.set(0, 5, -3);
 scene.add(pLight3);
 
 // Ánh sáng hồng từ phía trước — làm ảnh ấm hơn
-const frontLight = new THREE.PointLight(0xffb0c8, 0.6, 12);
+const frontLight = new THREE.PointLight(0xffb0c8, 1.2, 18); // mạnh hơn, xa hơn
 frontLight.position.set(0, 0, 6);
 scene.add(frontLight);
 
@@ -299,9 +299,10 @@ function buildPhotoSphere() {
       t.minFilter = THREE.LinearFilter;
       t.magFilter = THREE.LinearFilter;
     });
-    const mat = new THREE.MeshStandardMaterial({
-      map: tex, roughness: 0.35, metalness: 0.08,
-      transparent: true, opacity: 1,
+    const mat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      opacity: 1,
     });
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(PHOTO_W, PHOTO_H), mat);
     mesh.position.copy(pos);
@@ -418,8 +419,6 @@ function markViewed(index) {
     const iv = setInterval(() => {
       t += 0.05;
       ring.material.opacity = Math.min(t * 0.55, 0.55);
-      // Ảnh đã xem sáng hơn nhẹ
-      if (photoMeshes[index]) photoMeshes[index].material.emissive = new THREE.Color(0x1a0810);
       if (t >= 1) clearInterval(iv);
     }, 20);
   }
@@ -453,11 +452,11 @@ function triggerEnding() {
   // 1. Quả cầu dừng xoay, tất cả ảnh sáng lên
   AUTO_ROTATE_SPEED_CURRENT = 0;
   photoMeshes.forEach(m => {
-    m.material.emissiveIntensity = 0;
     let t = 0;
     const iv = setInterval(() => {
       t += 0.06;
-      m.material.emissive = new THREE.Color(0.4 * Math.min(t,1), 0.1 * Math.min(t,1), 0.2 * Math.min(t,1));
+      const v = Math.min(t, 1);
+      m.material.color.setRGB(1.0, 0.7 + v * 0.3, 0.8 + v * 0.2);
       if (t >= 1) clearInterval(iv);
     }, 20);
   });
@@ -858,12 +857,12 @@ function animate() {
 
       mesh.scale.setScalar(depthScale * mesh.userData.hoverScale);
 
-      // Glow khi hover
+      // Glow khi hover — dùng color thay vì emissive (MeshBasicMaterial)
       if (isHovered) {
-        mesh.material.emissive = new THREE.Color(0.18, 0.04, 0.1);
+        mesh.material.color.setRGB(1.0, 0.88, 0.93);
         canvas3d.style.cursor = 'pointer';
-      } else if (!mesh.userData.viewed) {
-        mesh.material.emissive = new THREE.Color(0, 0, 0);
+      } else {
+        mesh.material.color.setRGB(1, 1, 1);
       }
     });
 
@@ -925,7 +924,7 @@ replayBtn.addEventListener('click', () => {
   targetCamZ=7.5; currentCamZ=13;
 
   glowRingMeshes.forEach(r=>{r.material.opacity=0;});
-  photoMeshes.forEach(m=>{m.userData.viewed=false;m.userData.hoverScale=1;m.material.emissive=new THREE.Color(0,0,0);});
+  photoMeshes.forEach(m=>{m.userData.viewed=false;m.userData.hoverScale=1;m.material.color.setRGB(1,1,1);});
 
   sphereGroup.visible=true;
   sphereUI.classList.add('active');
