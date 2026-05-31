@@ -1092,7 +1092,12 @@ document.getElementById('introBtn').addEventListener('click', () => {
   // Phát nhạc ngay tại đây — trong click event, browser KHÔNG chặn
   if (!isMuted) {
     bgMusic.volume = 0.75;
-    bgMusic.play().catch(()=>{});
+    const playPromise = bgMusic.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => console.log('✅ Nhạc đang phát:', bgMusic.src))
+        .catch(err => console.error('❌ Lỗi phát nhạc:', err));
+    }
   }
 
   // 1. Intro fade out
