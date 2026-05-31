@@ -1089,6 +1089,12 @@ bokehField.material.opacity = 0;
 heartParticles.material.opacity = 0;
 
 document.getElementById('introBtn').addEventListener('click', () => {
+  // Phát nhạc ngay tại đây — trong click event, browser KHÔNG chặn
+  if (!isMuted) {
+    bgMusic.volume = 0.75;
+    bgMusic.play().catch(()=>{});
+  }
+
   // 1. Intro fade out
   introScreen.classList.remove('active');
 
@@ -1129,7 +1135,6 @@ document.getElementById('introBtn').addEventListener('click', () => {
     // Hiện sphere UI sau khi ảnh đã xuất hiện đủ
     setTimeout(() => {
       sphereUI.classList.add('active');
-      tryAutoPlay();
     }, photoMeshes.length * 120 + 600);
 
   }, 600);
