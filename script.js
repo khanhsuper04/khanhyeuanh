@@ -118,7 +118,8 @@ renderer.toneMappingExposure = window.innerWidth < 768 ? 2.2 : 1.7;
 
 const scene  = new THREE.Scene();
 // Sương mù nhẹ — tạo chiều sâu không gian
-scene.fog = new THREE.FogExp2(0x08030e, 0.008); // giảm fog để ảnh rõ hơn
+// Không dùng fog — làm mờ ảnh trên mobile
+// scene.fog = new THREE.FogExp2(0x08030e, 0.008);
 
 const camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.z = currentCamZ;
@@ -328,37 +329,18 @@ function buildPhotoSphere() {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      // Tạo canvas composite
-      const W = 512, H = Math.round(512 * (PHOTO_H / PHOTO_W));
+      // Texture resolution cao hơn cho mobile retina
+      const W = 768, H = Math.round(768 * (PHOTO_H / PHOTO_W));
       const cv = document.createElement('canvas');
       cv.width = W; cv.height = H;
       const cx = cv.getContext('2d');
 
-      // 1. Vẽ ảnh gốc
+      // 1. Vẽ ảnh gốc — giữ nguyên màu, không overlay tối
       cx.drawImage(img, 0, 0, W, H);
 
-      // 2. Overlay tông màu vũ trụ — rất nhẹ
-      cx.globalCompositeOperation = 'multiply';
-      cx.fillStyle = 'rgba(210, 175, 220, 0.10)';
-      cx.fillRect(0, 0, W, H);
-
-      // 3. Tăng sáng nhẹ
-      cx.globalCompositeOperation = 'screen';
-      cx.fillStyle = 'rgba(255, 220, 240, 0.06)';
-      cx.fillRect(0, 0, W, H);
-
-      // 4. Vignette bo góc — nhẹ hơn để ảnh không bị tối
-      cx.globalCompositeOperation = 'source-over';
-      const vg = cx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.35, W/2, H/2, Math.max(W,H)*0.75);
-      vg.addColorStop(0, 'rgba(0,0,0,0)');
-      vg.addColorStop(0.75, 'rgba(0,0,0,0)');
-      vg.addColorStop(1, 'rgba(8,3,14,0.45)');  // nhẹ hơn 0.72 cũ
-      cx.fillStyle = vg;
-      cx.fillRect(0, 0, W, H);
-
-      // 5. Bo góc
+      // 2. Chỉ bo góc nhẹ — không vignette tối
       cx.globalCompositeOperation = 'destination-in';
-      const radius = W * 0.06;
+      const radius = W * 0.05;
       cx.beginPath();
       cx.moveTo(radius, 0);
       cx.lineTo(W - radius, 0);
@@ -374,8 +356,10 @@ function buildPhotoSphere() {
       cx.fill();
 
       const tex = new THREE.CanvasTexture(cv);
-      tex.minFilter = THREE.LinearFilter;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
       tex.magFilter = THREE.LinearFilter;
+      tex.generateMipmaps = true;
+      tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); // sắc nét hơn khi nhìn góc nghiêng
       mat.map = tex;
       mat.needsUpdate = true;
     };
