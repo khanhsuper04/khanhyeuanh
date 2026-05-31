@@ -466,7 +466,11 @@ canvas3d.addEventListener('mousemove', (e) => {
 function openLightbox(index) {
   lbIndex = index;
   updateLightbox();
+  lightbox.classList.remove('lb-closing');
   lightbox.classList.add('active');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    lightbox.classList.add('lb-open');
+  }));
   markViewed(index);
 }
 
@@ -475,11 +479,15 @@ function updateLightbox() {
   lbImg.src  = item.src;
   lbCaption.textContent = item.caption || '';
   lbCounter.textContent = `${lbIndex + 1} / ${IMAGES.length}`;
-  const frame = document.querySelector('.lb-frame');
-  frame.style.animation = 'none'; void frame.offsetWidth; frame.style.animation = '';
 }
 
-function closeLightbox() { lightbox.classList.remove('active'); }
+function closeLightbox() {
+  lightbox.classList.add('lb-closing');
+  lightbox.classList.remove('lb-open');
+  setTimeout(() => {
+    lightbox.classList.remove('active', 'lb-closing');
+  }, 400);
+}
 
 function markViewed(index) {
   viewedPhotos.add(index);
