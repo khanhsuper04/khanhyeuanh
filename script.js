@@ -1089,16 +1089,20 @@ bokehField.material.opacity = 0;
 heartParticles.material.opacity = 0;
 
 document.getElementById('introBtn').addEventListener('click', () => {
-  // Phát nhạc ngay tại đây — trong click event, browser KHÔNG chặn
-  if (!isMuted) {
-    bgMusic.volume = 0.75;
-    const playPromise = bgMusic.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => console.log('✅ Nhạc đang phát:', bgMusic.src))
-        .catch(err => console.error('❌ Lỗi phát nhạc:', err));
-    }
-  }
+  // Unlock CẢ 2 audio ngay trong click event này
+  // Browser chỉ cho phép play audio trong user gesture
+  bgMusic.volume = 0.75;
+  bgMusic.play()
+    .then(() => console.log('✅ Nhạc đang phát:', bgMusic.src))
+    .catch(err => console.error('❌ Lỗi phát nhạc:', err));
+
+  // Unlock endingMusic bằng cách play rồi pause ngay
+  endingMusic.volume = 0;
+  endingMusic.play().then(() => {
+    endingMusic.pause();
+    endingMusic.currentTime = 0;
+    endingMusic.volume = 0;
+  }).catch(()=>{});
 
   // 1. Intro fade out
   introScreen.classList.remove('active');
