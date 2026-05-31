@@ -757,6 +757,7 @@ canvas3d.addEventListener('click', e=>{
 });
 
 canvas3d.addEventListener('touchstart', e=>{
+  e.preventDefault(); // chặn scroll/bounce ngay từ đầu
   if(e.touches.length===2){
     pinchStartDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
     pinchStartZ=targetCamZ; return;
@@ -765,11 +766,11 @@ canvas3d.addEventListener('touchstart', e=>{
   touchStartPos={x:e.touches[0].clientX,y:e.touches[0].clientY};
   prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};
   rotVelocity={x:0,y:0};
-},{passive:true});
+},{passive:false}); // passive:false để preventDefault hoạt động
 
 canvas3d.addEventListener('touchmove', e=>{
+  e.preventDefault(); // chặn scroll page và khoảng trắng
   if(e.touches.length===2){
-    e.preventDefault();
     const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
     targetCamZ=Math.max(4,Math.min(14,pinchStartZ*(pinchStartDist/d))); return;
   }
