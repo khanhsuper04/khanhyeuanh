@@ -70,7 +70,8 @@ const replayBtn     = document.getElementById('replayBtn');
 const musicBtn      = document.getElementById('musicBtn');
 const iconMusic     = document.getElementById('iconMusic');
 const iconMute      = document.getElementById('iconMute');
-const bgMusic       = document.getElementById('bgMusic');
+const bgMusic      = document.getElementById('bgMusic');
+const endingMusic  = document.getElementById('endingMusic');
 const endingCanvas  = document.getElementById('endingCanvas');
 
 /* ═══════════════════════════════════════════════════════════
@@ -661,6 +662,7 @@ function resizeEndingCanvas() {
 function showEndingScreen() {
   endingScreen.classList.add('active');
   resizeEndingCanvas();
+  crossfadeToEnding();
   startEndingParticles2d();
   setTimeout(() => endingHeart.classList.add('visible'), 400);
   startWishTyping();
@@ -966,21 +968,47 @@ function setMusicState(muted) {
   isMuted = muted;
   if (muted) {
     bgMusic.pause();
+    endingMusic.pause();
     iconMusic.style.display='none'; iconMute.style.display='block';
     musicBtn.classList.add('muted');
   } else {
-    bgMusic.play().catch(()=>{});
+    // Phát bài đang active
+    if (endingScreen.classList.contains('active')) {
+      endingMusic.play().catch(()=>{});
+    } else {
+      bgMusic.play().catch(()=>{});
+    }
     iconMusic.style.display='block'; iconMute.style.display='none';
     musicBtn.classList.remove('muted');
   }
 }
+
 function tryAutoPlay() {
-  bgMusic.volume=0;
-  bgMusic.play().then(()=>{
-    let v=0;const iv=setInterval(()=>{v=Math.min(v+.04,.75);bgMusic.volume=v;if(v>=.75)clearInterval(iv);},100);
-  }).catch(()=>{
-    document.addEventListener('click',()=>{if(!isMuted){bgMusic.volume=.75;bgMusic.play().catch(()=>{});}},{once:true});
+  bgMusic.volume = 0;
+  bgMusic.play().then(() => {
+    let v=0; const iv=setInterval(()=>{ v=Math.min(v+.04,.75); bgMusic.volume=v; if(v>=.75)clearInterval(iv); },100);
+  }).catch(() => {
+    document.addEventListener('click',()=>{ if(!isMuted){ bgMusic.volume=.75; bgMusic.play().catch(()=>{}); } },{once:true});
   });
+}
+
+// Crossfade từ sphere music sang ending music
+function crossfadeToEnding() {
+  if (isMuted) return;
+  endingMusic.volume = 0;
+  endingMusic.play().catch(()=>{});
+
+  let t = 0;
+  const iv = setInterval(() => {
+    t += 0.02;
+    bgMusic.volume    = Math.max(0, 0.75 - t * 0.75);
+    endingMusic.volume = Math.min(0.75, t * 0.75);
+    if (t >= 1) {
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
+      clearInterval(iv);
+    }
+  }, 60);
 }
 musicBtn.addEventListener('click',()=>setMusicState(!isMuted));
 
@@ -1012,6 +1040,15 @@ replayBtn.addEventListener('click', () => {
   starField2.material.opacity = 0.6;
   bokehField.material.opacity = 0.07;
   heartParticles.material.opacity = 0.4;
+
+  // Crossfade về sphere music
+  if (!isMuted) {
+    endingMusic.pause();
+    endingMusic.currentTime = 0;
+    bgMusic.volume = 0;
+    bgMusic.play().catch(()=>{});
+    let v=0; const iv=setInterval(()=>{ v=Math.min(v+.04,.75); bgMusic.volume=v; if(v>=.75)clearInterval(iv); },100);
+  }
 });
 
 /* ═══════════════════════════════════════════════════════════
