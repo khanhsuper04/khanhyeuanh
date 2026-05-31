@@ -1089,62 +1089,57 @@ bokehField.material.opacity = 0;
 heartParticles.material.opacity = 0;
 
 document.getElementById('introBtn').addEventListener('click', () => {
-  // Unlock CẢ 2 audio ngay trong click event này
-  // Browser chỉ cho phép play audio trong user gesture
-  bgMusic.volume = 0.75;
-  bgMusic.play()
-    .then(() => console.log('✅ Nhạc đang phát:', bgMusic.src))
-    .catch(err => console.error('❌ Lỗi phát nhạc:', err));
-
-  // Unlock endingMusic bằng cách play rồi pause ngay
+  // Phát nhạc
+  if (!isMuted) {
+    bgMusic.volume = 0.75;
+    bgMusic.play().catch(()=>{});
+  }
+  // Unlock endingMusic silently
   endingMusic.volume = 0;
   endingMusic.play().then(() => {
     endingMusic.pause();
     endingMusic.currentTime = 0;
-    endingMusic.volume = 0;
   }).catch(()=>{});
 
   // 1. Intro fade out
   introScreen.classList.remove('active');
 
-  // 2. Nền sao fade in từ từ
+  // 2. Nền sao fade in
   let starT = 0;
   const starIv = setInterval(() => {
     starT += 0.018;
     const p = Math.min(starT, 1);
-    starField1.material.opacity  = p * 0.8;
-    starField2.material.opacity  = p * 0.6;
-    bokehField.material.opacity  = p * 0.07;
+    starField1.material.opacity     = p * 0.8;
+    starField2.material.opacity     = p * 0.6;
+    bokehField.material.opacity     = p * 0.07;
     heartParticles.material.opacity = p * 0.4;
     if (starT >= 1) clearInterval(starIv);
   }, 16);
 
-  // 3. Sau 0.6s: quả cầu xuất hiện từ xa zoom vào
+  // 3. Sau 0.6s: quả cầu xuất hiện
   setTimeout(() => {
     sphereGroup.visible = true;
-
-    // Bắt đầu rất xa, mờ hoàn toàn
     currentCamZ = 22;
     targetCamZ  = 7.5;
 
-    // Fade in từng ảnh lần lượt — staggered
+    // Fade in ảnh — stagger ngắn hơn (40ms thay vì 120ms)
     photoMeshes.forEach((mesh, i) => {
       mesh.material.opacity = 0;
       mesh.material.transparent = true;
       setTimeout(() => {
         let t = 0;
         const iv = setInterval(() => {
-          t += 0.04;
+          t += 0.05;
           mesh.material.opacity = Math.min(t, 1);
           if (t >= 1) { mesh.material.opacity = 1; clearInterval(iv); }
         }, 16);
-      }, i * 120 + 200);
+      }, i * 40 + 100);
     });
 
-    // Hiện sphere UI sau khi ảnh đã xuất hiện đủ
+    // Hiện sphere UI sớm hơn — không cần đợi hết ảnh
     setTimeout(() => {
       sphereUI.classList.add('active');
-    }, photoMeshes.length * 120 + 600);
+    }, 600);
 
   }, 600);
 });
