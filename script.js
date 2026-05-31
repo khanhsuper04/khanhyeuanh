@@ -2,12 +2,33 @@
    CẤU HÌNH — chỉnh sửa tại đây
 ═══════════════════════════════════════════════════════════ */
 const IMAGES = [
-  { src: 'images/1.jpg', caption: '' },
-  { src: 'images/2.jpg', caption: '' },
-  { src: 'images/3.jpg', caption: '' },
-  { src: 'images/4.jpg', caption: '' },
-  { src: 'images/5.jpg', caption: '' },
-  { src: 'images/6.jpg', caption: '' },
+  { src: 'images/1.jpg',  caption: '' },
+  { src: 'images/2.jpg',  caption: '' },
+  { src: 'images/3.jpg',  caption: '' },
+  { src: 'images/4.jpg',  caption: '' },
+  { src: 'images/5.jpg',  caption: '' },
+  { src: 'images/6.jpg',  caption: '' },
+  { src: 'images/7.jpg',  caption: '' },
+  { src: 'images/8.jpg',  caption: '' },
+  { src: 'images/9.jpg',  caption: '' },
+  { src: 'images/10.jpg', caption: '' },
+  { src: 'images/11.jpg', caption: '' },
+  { src: 'images/12.jpg', caption: '' },
+  { src: 'images/13.jpg', caption: '' },
+  { src: 'images/14.jpg', caption: '' },
+  { src: 'images/15.jpg', caption: '' },
+  { src: 'images/16.jpg', caption: '' },
+  { src: 'images/17.jpg', caption: '' },
+  { src: 'images/18.jpg', caption: '' },
+  { src: 'images/19.jpg', caption: '' },
+  { src: 'images/20.jpg', caption: '' },
+  { src: 'images/21.jpg', caption: '' },
+  { src: 'images/22.jpg', caption: '' },
+  { src: 'images/23.jpg', caption: '' },
+  { src: 'images/24.jpg', caption: '' },
+  { src: 'images/25.jpg', caption: '' },
+  { src: 'images/26.jpg', caption: '' },
+  { src: 'images/27.jpg', caption: '' },
 ];
 
 const WISHES = [
@@ -93,8 +114,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3)); // tăng lên 3 ch
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x000000, 0);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-// Mobile thường tối hơn desktop — tăng exposure
-renderer.toneMappingExposure = window.innerWidth < 768 ? 1.8 : 1.4;
+renderer.toneMappingExposure = window.innerWidth < 768 ? 2.2 : 1.7;
 
 const scene  = new THREE.Scene();
 // Sương mù nhẹ — tạo chiều sâu không gian
@@ -407,14 +427,23 @@ function buildPhotoSphere() {
     glowRingMeshes.push(ring);
   });
 
-  /* ── Wireframe cầu — mờ hơn, tinh tế hơn ── */
-  const coreGeo = new THREE.SphereGeometry(SPHERE_RADIUS * 0.97, 20, 14);
+  /* ── Wireframe cầu — lớp 1: lưới mịn hồng ── */
+  const coreGeo = new THREE.SphereGeometry(SPHERE_RADIUS * 0.97, 28, 18);
   const coreMat = new THREE.MeshBasicMaterial({
-    color: 0xd4607a, wireframe: true,
-    transparent: true, opacity: 0.028,
+    color: 0xf0a0b8, wireframe: true,
+    transparent: true, opacity: 0.18,
     blending: THREE.AdditiveBlending, depthWrite: false,
   });
   sphereGroup.add(new THREE.Mesh(coreGeo, coreMat));
+
+  /* ── Wireframe cầu — lớp 2: lưới thưa trắng, nổi hơn ── */
+  const coreGeo2 = new THREE.SphereGeometry(SPHERE_RADIUS * 0.975, 10, 7);
+  const coreMat2 = new THREE.MeshBasicMaterial({
+    color: 0xffd0e8, wireframe: true,
+    transparent: true, opacity: 0.12,
+    blending: THREE.AdditiveBlending, depthWrite: false,
+  });
+  sphereGroup.add(new THREE.Mesh(coreGeo2, coreMat2));
 
   /* ── Orbit ring — đường xích đạo phát sáng ── */
   const orbitGeo = new THREE.TorusGeometry(SPHERE_RADIUS * 1.02, 0.004, 4, 120);
@@ -1000,7 +1029,7 @@ window.addEventListener('resize',()=>{
   camera.aspect=window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth,window.innerHeight);
-  renderer.toneMappingExposure = window.innerWidth < 768 ? 1.8 : 1.4;
+  renderer.toneMappingExposure = window.innerWidth < 768 ? 2.2 : 1.7;
   resizeEndingCanvas();
 });
 
