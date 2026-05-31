@@ -662,10 +662,14 @@ function resizeEndingCanvas() {
 function showEndingScreen() {
   endingScreen.classList.add('active');
   resizeEndingCanvas();
+  // Crossfade nhạc
   crossfadeToEnding();
-  startEndingParticles2d();
-  setTimeout(() => endingHeart.classList.add('visible'), 400);
-  startWishTyping();
+  // Delay nhẹ để DOM render xong rồi mới chạy animation
+  setTimeout(() => {
+    startEndingParticles2d();
+    endingHeart.classList.add('visible');
+    startWishTyping();
+  }, 100);
 }
 
 function startEndingParticles2d() {
@@ -984,11 +988,17 @@ function setMusicState(muted) {
 }
 
 function tryAutoPlay() {
-  bgMusic.volume = 0;
-  bgMusic.play().then(() => {
-    let v=0; const iv=setInterval(()=>{ v=Math.min(v+.04,.75); bgMusic.volume=v; if(v>=.75)clearInterval(iv); },100);
-  }).catch(() => {
-    document.addEventListener('click',()=>{ if(!isMuted){ bgMusic.volume=.75; bgMusic.play().catch(()=>{}); } },{once:true});
+  bgMusic.volume = 0.75;
+  bgMusic.play().catch(() => {
+    // Browser chặn — chờ interaction tiếp theo
+    const unlock = () => {
+      bgMusic.volume = 0.75;
+      bgMusic.play().catch(()=>{});
+      document.removeEventListener('touchstart', unlock);
+      document.removeEventListener('click', unlock);
+    };
+    document.addEventListener('touchstart', unlock, { once: true });
+    document.addEventListener('click', unlock, { once: true });
   });
 }
 
