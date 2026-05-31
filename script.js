@@ -35,16 +35,16 @@ const WISHES = [
   { text: 'Chúc em bé của anh có một ngày Quốc tế Thiếu nhi thật vui vẻ ❤️', style: 'big' },
   { text: '', style: 'spacer' },
   { text: 'Cảm ơn em đã xuất hiện trong cuộc đời anh', style: '' },
-  { text: 'và mang đến thật nhiều niềm vui, tiếng cười.', style: '' },
+  { text: 'và mang đến thật nhiều niềm vui, hạnh phúc.', style: '' },
   { text: '', style: 'spacer' },
   { text: 'Mong rằng em sẽ luôn hạnh phúc,', style: '' },
   { text: 'luôn giữ được sự hồn nhiên đáng yêu', style: '' },
   { text: 'và đạt được mọi điều em mong muốn.', style: '' },
   { text: '', style: 'spacer' },
-  { text: 'Anh sẽ luôn ở bên cạnh,', style: '' },
-  { text: 'yêu thương và che chở cho em.', style: '' },
+  { text: 'Anh mong rằng chúng ta,', style: '' },
+  { text: 'vẫn sẽ đồng hành cùng với nhau trên chặng đường dài.', style: '' },
   { text: '', style: 'spacer' },
-  { text: 'Yêu em rất nhiều ❤️', style: 'big' },
+  { text: 'ĐKhanh yêu HAnh ❤️', style: 'big' },
 ];
 
 // Kích thước ảnh — nhỏ gọn, chuyên nghiệp
