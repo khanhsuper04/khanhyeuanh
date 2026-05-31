@@ -93,7 +93,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3)); // tăng lên 3 ch
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x000000, 0);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.4; // sáng hơn
+// Mobile thường tối hơn desktop — tăng exposure
+renderer.toneMappingExposure = window.innerWidth < 768 ? 1.8 : 1.4;
 
 const scene  = new THREE.Scene();
 // Sương mù nhẹ — tạo chiều sâu không gian
@@ -294,16 +295,70 @@ function buildPhotoSphere() {
     const pos   = new THREE.Vector3(x * SPHERE_RADIUS, y * SPHERE_RADIUS, z * SPHERE_RADIUS);
     const norm  = pos.clone().normalize();
 
-    /* ── Ảnh chính ── */
-    const tex = new THREE.TextureLoader().load(item.src, t => {
-      t.minFilter = THREE.LinearFilter;
-      t.magFilter = THREE.LinearFilter;
-    });
+    /* ── Ảnh chính — load rồi composite vào canvas để hòa màu ── */
+    const loader = new THREE.TextureLoader();
     const mat = new THREE.MeshBasicMaterial({
-      map: tex,
       transparent: true,
       opacity: 1,
+      color: 0xffffff,
     });
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      // Tạo canvas composite
+      const W = 512, H = Math.round(512 * (PHOTO_H / PHOTO_W));
+      const cv = document.createElement('canvas');
+      cv.width = W; cv.height = H;
+      const cx = cv.getContext('2d');
+
+      // 1. Vẽ ảnh gốc
+      cx.drawImage(img, 0, 0, W, H);
+
+      // 2. Overlay tông màu vũ trụ — hồng tím rất nhẹ (blend multiply)
+      cx.globalCompositeOperation = 'multiply';
+      cx.fillStyle = 'rgba(200, 160, 210, 0.18)';
+      cx.fillRect(0, 0, W, H);
+
+      // 3. Tăng contrast nhẹ bằng overlay
+      cx.globalCompositeOperation = 'overlay';
+      cx.fillStyle = 'rgba(180, 100, 140, 0.08)';
+      cx.fillRect(0, 0, W, H);
+
+      // 4. Vignette bo góc — làm ảnh hòa vào nền tối
+      cx.globalCompositeOperation = 'source-over';
+      const vg = cx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.28, W/2, H/2, Math.max(W,H)*0.72);
+      vg.addColorStop(0, 'rgba(0,0,0,0)');
+      vg.addColorStop(0.7, 'rgba(0,0,0,0)');
+      vg.addColorStop(1, 'rgba(8,3,14,0.72)');
+      cx.fillStyle = vg;
+      cx.fillRect(0, 0, W, H);
+
+      // 5. Bo góc
+      cx.globalCompositeOperation = 'destination-in';
+      const radius = W * 0.06;
+      cx.beginPath();
+      cx.moveTo(radius, 0);
+      cx.lineTo(W - radius, 0);
+      cx.quadraticCurveTo(W, 0, W, radius);
+      cx.lineTo(W, H - radius);
+      cx.quadraticCurveTo(W, H, W - radius, H);
+      cx.lineTo(radius, H);
+      cx.quadraticCurveTo(0, H, 0, H - radius);
+      cx.lineTo(0, radius);
+      cx.quadraticCurveTo(0, 0, radius, 0);
+      cx.closePath();
+      cx.fillStyle = '#fff';
+      cx.fill();
+
+      const tex = new THREE.CanvasTexture(cv);
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      mat.map = tex;
+      mat.needsUpdate = true;
+    };
+    img.src = item.src;
+
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(PHOTO_W, PHOTO_H), mat);
     mesh.position.copy(pos);
     mesh.lookAt(pos.clone().multiplyScalar(2));
@@ -942,6 +997,7 @@ window.addEventListener('resize',()=>{
   camera.aspect=window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.toneMappingExposure = window.innerWidth < 768 ? 1.8 : 1.4;
   resizeEndingCanvas();
 });
 
